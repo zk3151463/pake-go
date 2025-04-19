@@ -22,12 +22,29 @@ Pake-Go 是一个用 Go 语言编写的轻量级工具，可以将任何网页�
 go install github.com/zk3151463/pake-go@latest
 ```
 
+## 初始化环境
+
+在开始使用 Pake-Go 之前，你需要初始化开发环境。运行以下命令：
+
+```bash
+pake-go init
+```
+
+这个命令会自动：
+- 检查并安装 Node.js（在 macOS 上使用 Homebrew，在 Linux 上使用 apt）
+- 安装最新版本的 Wails
+
+注意：
+- 在 macOS 上需要预先安装 Homebrew
+- 在 Linux 上需要 sudo 权限来安装 Node.js
+- 在 Windows 上需要手动安装 Node.js（提供了相应的提示信息）
+
 ## 使用方法
 
 ### 命令行方式
 
 ```bash
-pake-go -u https://example.com -n MyApp
+pake-go build -u https://example.com -n MyApp
 ```
 
 ### 配置文件方式
@@ -54,8 +71,15 @@ pake-go -u https://example.com -n MyApp
 然后运行：
 
 ```bash
-pake-go -c config.json
+pake-go build -c config.json
 ```
+
+## 命令说明
+
+| 命令 | 说明 |
+|------|------|
+| init | 初始化开发环境，安装必要的依赖 |
+| build | 构建应用程序（默认命令） |
 
 ## 配置选项
 

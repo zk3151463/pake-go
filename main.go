@@ -7,10 +7,14 @@ import (
 
 	"github.com/zk3151463/pake-go/pkg/builder"
 	"github.com/zk3151463/pake-go/pkg/config"
+	"github.com/zk3151463/pake-go/pkg/initializer"
 )
 
 func main() {
-	// Define command line flags
+	// Create subcommands
+	initCmd := flag.NewFlagSet("init", flag.ExitOnError)
+
+	// Main command flags
 	url := flag.String("url", "", "URL to package")
 	name := flag.String("name", "", "Application name")
 	icon := flag.String("icon", "", "Application icon path")
@@ -22,12 +26,38 @@ func main() {
 	userAgent := flag.String("user-agent", "", "Custom user agent")
 	configFile := flag.String("config", "", "Path to config file")
 
-	flag.Parse()
+	// Check if any arguments were provided
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: pake-go <command> [options]")
+		fmt.Println("\nCommands:")
+		fmt.Println("  init    Initialize development environment")
+		fmt.Println("  build   Build application (default)")
+		fmt.Println("\nFor build options, run: pake-go build -h")
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "init":
+		initCmd.Parse(os.Args[2:])
+		fmt.Println("Initializing development environment...")
+		if err := initializer.InitEnvironment(); err != nil {
+			fmt.Printf("Error initializing environment: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("Development environment initialized successfully!")
+		return
+
+	case "build":
+		flag.CommandLine.Parse(os.Args[2:])
+	default:
+		// Treat as build command for backward compatibility
+		flag.CommandLine.Parse(os.Args[1:])
+	}
 
 	// If no URL is provided, show usage
 	if *url == "" && *configFile == "" {
-		fmt.Println("Usage: pake-go -url <url> [options]")
-		fmt.Println("   or: pake-go -config <config-file>")
+		fmt.Println("Usage: pake-go build -url <url> [options]")
+		fmt.Println("   or: pake-go build -config <config-file>")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
