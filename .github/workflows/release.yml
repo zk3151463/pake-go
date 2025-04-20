@@ -29,11 +29,20 @@ jobs:
           go-version: ${{ matrix.go }}
 
       - name: Build
+        if: matrix.os != 'windows-latest'
         run: |
           go mod download
-          GOOS=${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }} \
+          GOOS=${{ matrix.os == 'macos-latest' && 'darwin' || 'linux' }} \
           GOARCH=amd64 \
-          go build -o pake-go-${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}-amd64${{ matrix.os == 'windows-latest' && '.exe' || '' }}
+          go build -o pake-go-${{ matrix.os == 'macos-latest' && 'darwin' || 'linux' }}-amd64
+
+      - name: Build Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          go mod download
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          go build -o pake-go-windows-amd64.exe
 
       - name: Create Release
         id: create_release
