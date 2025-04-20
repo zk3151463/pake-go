@@ -307,12 +307,89 @@ func (a *App) domReady(ctx context.Context) {
 			document.body.style.backgroundColor = '#ffffff';
 			document.documentElement.style.backgroundColor = '#ffffff';
 
-			// 设置用户代理
-			{{if .UserAgent}}
-			Object.defineProperty(navigator, 'userAgent', {
-				get: function() { return '{{.UserAgent}}'; }
+			// 设置用户代理和浏览器特性
+			Object.defineProperties(navigator, {
+				'userAgent': {
+					get: function() { return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'; }
+				},
+				'platform': {
+					get: function() { return 'MacIntel'; }
+				},
+				'language': {
+					get: function() { return 'zh-CN'; }
+				},
+				'languages': {
+					get: function() { return ['zh-CN', 'zh']; }
+				},
+				'webdriver': {
+					get: function() { return false; }
+				},
+				'hardwareConcurrency': {
+					get: function() { return 8; }
+				},
+				'deviceMemory': {
+					get: function() { return 8; }
+				},
+				'maxTouchPoints': {
+					get: function() { return 0; }
+				},
+				'vendor': {
+					get: function() { return 'Google Inc.'; }
+				},
+				'vendorSub': {
+					get: function() { return ''; }
+				},
+				'productSub': {
+					get: function() { return '20030107'; }
+				},
+				'cookieEnabled': {
+					get: function() { return true; }
+				},
+				'appCodeName': {
+					get: function() { return 'Mozilla'; }
+				},
+				'appName': {
+					get: function() { return 'Netscape'; }
+				},
+				'appVersion': {
+					get: function() { return '5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'; }
+				}
 			});
-			{{end}}
+
+			// 设置屏幕信息
+			Object.defineProperties(window.screen, {
+				'width': {
+					get: function() { return {{.Width}}; }
+				},
+				'height': {
+					get: function() { return {{.Height}}; }
+				},
+				'colorDepth': {
+					get: function() { return 24; }
+				},
+				'pixelDepth': {
+					get: function() { return 24; }
+				},
+				'availWidth': {
+					get: function() { return {{.Width}}; }
+				},
+				'availHeight': {
+					get: function() { return {{.Height}}; }
+				}
+			});
+
+			// 设置时区
+			Object.defineProperty(Intl, 'DateTimeFormat', {
+				value: function() {
+					return {
+						resolvedOptions: function() {
+							return {
+								timeZone: 'Asia/Shanghai'
+							};
+						}
+					};
+				}
+			});
 
 			// 使用 sessionStorage 来防止循环重定向
 			if (!sessionStorage.getItem('hasRedirected') && window.location.href !== "{{.URL}}") {
@@ -416,9 +493,6 @@ func main() {
 		},
 		Frameless:   {{.HideTitleBar}},
 		AlwaysOnTop: {{.AlwaysOnTop}},
-		{{if .UserAgent}}
-		WebviewUserAgent: "{{.UserAgent}}",
-		{{end}}
 	})
 
 	if err != nil {
