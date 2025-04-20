@@ -319,6 +319,69 @@ func (a *App) domReady(ctx context.Context) {
 				sessionStorage.setItem('hasRedirected', 'true');
 				window.location.href = "{{.URL}}";
 			}
+
+			// 处理所有链接点击事件
+			document.addEventListener('click', function(e) {
+				let target = e.target;
+				// 向上查找最近的 a 标签
+				while (target && target.tagName !== 'A') {
+					target = target.parentElement;
+					if (!target) return;
+				}
+
+				if (target.tagName === 'A') {
+					const href = target.getAttribute('href');
+					if (href && (href.startsWith('http') || href.startsWith('//'))) {
+						e.preventDefault();
+						e.stopPropagation();
+						
+						// 处理新标签页打开
+						if (target.getAttribute('target') === '_blank') {
+							window.location.href = href;
+							return;
+						}
+
+						// 处理普通链接
+						window.location.href = href;
+					}
+				}
+			}, true);
+
+			// 处理右键菜单中的"在新标签页中打开"
+			document.addEventListener('contextmenu', function(e) {
+				let target = e.target;
+				while (target && target.tagName !== 'A') {
+					target = target.parentElement;
+					if (!target) return;
+				}
+
+				if (target.tagName === 'A') {
+					const href = target.getAttribute('href');
+					if (href && (href.startsWith('http') || href.startsWith('//'))) {
+						e.preventDefault();
+						e.stopPropagation();
+					}
+				}
+			}, true);
+
+			// 处理表单提交
+			document.addEventListener('submit', function(e) {
+				if (e.target.tagName === 'FORM' && e.target.target === '_blank') {
+					e.preventDefault();
+					e.target.target = '_self';
+					e.target.submit();
+				}
+			}, true);
+
+			// 处理 window.open
+			const originalOpen = window.open;
+			window.open = function(url, target, features) {
+				if (url && (url.startsWith('http') || url.startsWith('//'))) {
+					window.location.href = url;
+					return null;
+				}
+				return originalOpen(url, target, features);
+			};
 		})();
 	` + "`" + `)
 	runtime.WindowExecJS(ctx, script)
