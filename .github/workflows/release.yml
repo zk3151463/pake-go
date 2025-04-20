@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'
 
+# 添加必要的权限
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -16,6 +20,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 获取完整的 git 历史
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -25,16 +31,17 @@ jobs:
       - name: Build
         run: |
           go mod download
-          go build -o pake-go
+          GOOS=${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }} \
+          GOARCH=amd64 \
+          go build -o pake-go-${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}-amd64${{ matrix.os == 'windows-latest' && '.exe' || '' }}
 
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            pake-go
+            pake-go-*-amd64*
           draft: false
           prerelease: false
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          token: ${{ secrets.GITHUB_TOKEN }} 
